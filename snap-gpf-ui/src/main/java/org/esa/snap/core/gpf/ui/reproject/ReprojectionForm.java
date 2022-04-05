@@ -47,6 +47,7 @@ import org.esa.snap.ui.crs.CustomCrsForm;
 import org.esa.snap.ui.crs.OutputGeometryForm;
 import org.esa.snap.ui.crs.OutputGeometryFormModel;
 import org.esa.snap.ui.crs.PredefinedCrsForm;
+import org.esa.snap.ui.product.ProductExpressionPane;
 import org.geotools.referencing.AbstractReferenceSystem;
 import org.geotools.referencing.CRS;
 import org.opengis.parameter.ParameterValueGroup;
@@ -57,16 +58,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Projection;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -104,6 +96,15 @@ class ReprojectionForm extends JTabbedPane {
     private CollocationCrsForm collocationCrsUI;
     private CustomCrsForm customCrsUI;
 
+    private boolean applyValidPixelExpression;
+    private JCheckBox applyValidPixelExpressionCheckBox;
+    private boolean transferValidPixelExpression;
+    private JCheckBox transferValidPixelExpressionCheckBox;
+
+
+    private JButton editExpressionButton;
+    private JTextArea expressionArea;
+    private JTabbedPane t = this;
 
     ReprojectionForm(TargetProductSelector targetProductSelector, boolean orthorectify, AppContext appContext) {
         this.targetProductSelector = targetProductSelector;
@@ -159,6 +160,16 @@ class ReprojectionForm extends JTabbedPane {
             parameterMap.put("pixelSizeY", container.getValue("pixelSizeY"));
             parameterMap.put("width", container.getValue("width"));
             parameterMap.put("height", container.getValue("height"));
+        }
+
+        applyValidPixelExpression = applyValidPixelExpressionCheckBox.isSelected();
+        parameterMap.put("applyValidPixelExpression", applyValidPixelExpression);
+
+        transferValidPixelExpression = transferValidPixelExpressionCheckBox.isSelected();
+        parameterMap.put("transferValidPixelExpression", transferValidPixelExpression);
+
+        if (expressionArea.getText() != null) {
+            parameterMap.put("maskExpression", expressionArea.getText());
         }
     }
 
@@ -254,6 +265,8 @@ class ReprojectionForm extends JTabbedPane {
     private void createUI() {
         addTab("I/O Parameters", createIOPanel());
         addTab("Reprojection Parameters", createParametersPanel());
+        addTab("Validation Masking", createMaskPanel());
+
     }
 
     private JPanel createIOPanel() {
@@ -305,6 +318,23 @@ class ReprojectionForm extends JTabbedPane {
         return parameterPanel;
     }
 
+    private JPanel createMaskPanel() {
+        final JPanel parameterPanel = new JPanel();
+        final TableLayout layout = new TableLayout(1);
+        layout.setTablePadding(4, 4);
+        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        layout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
+        layout.setTableWeightX(1.0);
+        parameterPanel.setLayout(layout);
+
+        parameterPanel.add(createValidPixelSettingsPanel());
+        parameterPanel.add(createMaskSettingsPanel());
+        parameterPanel.add(layout.createVerticalSpacer());
+
+        return parameterPanel;
+    }
+
+
     private void updateCRS() {
         final Product sourceProduct = getSourceProduct();
         try {
@@ -345,9 +375,9 @@ class ReprojectionForm extends JTabbedPane {
                     iGeometry = ImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
                 } else {
                     iGeometry = ImageGeometry.createTargetGeometry(sourceProduct, crs,
-                                                                   null, null, null, null,
-                                                                   null, null, null, null,
-                                                                   null);
+                            null, null, null, null,
+                            null, null, null, null,
+                            null);
 
                 }
                 Rectangle imageRect = iGeometry.getImageRect();
@@ -442,9 +472,9 @@ class ReprojectionForm extends JTabbedPane {
                 wktArea.setText(wkt);
                 final JScrollPane scrollPane = new JScrollPane(wktArea);
                 final ModalDialog dialog = new ModalDialog(appContext.getApplicationWindow(),
-                                                           "Coordinate reference system as well known text",
-                                                           scrollPane,
-                                                           ModalDialog.ID_OK, null);
+                        "Coordinate reference system as well known text",
+                        scrollPane,
+                        ModalDialog.ID_OK, null);
                 dialog.show();
             });
             wktButton.setEnabled(false);
@@ -476,7 +506,7 @@ class ReprojectionForm extends JTabbedPane {
         collocationCrsUI.getCrsUI().addPropertyChangeListener("collocate", evt -> {
             final boolean collocate = (Boolean) evt.getNewValue();
             reprojectionContainer.setValue(Model.PRESERVE_RESOLUTION,
-                                           collocate || reprojectionModel.preserveResolution);
+                    collocate || reprojectionModel.preserveResolution);
             preserveResolutionCheckBox.setEnabled(!collocate);
         });
         outputSettingsPanel.add(preserveResolutionCheckBox);
@@ -514,6 +544,57 @@ class ReprojectionForm extends JTabbedPane {
     private void updateOutputParameterState() {
         outputParamButton.setEnabled(!reprojectionModel.preserveResolution && (crs != null));
         updateProductSize();
+    }
+
+    private JPanel createMaskSettingsPanel() {
+        final TableLayout layout = new TableLayout(2);
+        layout.setTablePadding(4, 4);
+        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        layout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
+        layout.setTableWeightX(1.0);
+
+        final JPanel panel = new JPanel(layout);
+        panel.setBorder(BorderFactory.createTitledBorder("Mask Expression"));
+
+
+        editExpressionButton = new JButton("Edit ...");
+        editExpressionButton.setPreferredSize(editExpressionButton.getPreferredSize());
+        editExpressionButton.setMaximumSize(editExpressionButton.getPreferredSize());
+        editExpressionButton.setMinimumSize(editExpressionButton.getPreferredSize());
+        final Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        editExpressionButton.addActionListener(new EditExpressionActionListener(parentWindow));
+        expressionArea = new JTextArea(3, 40);
+        expressionArea.setLineWrap(true);
+        panel.add(new JScrollPane(expressionArea));
+        panel.add(editExpressionButton);
+
+
+
+        return panel;
+    }
+
+
+    private JPanel createValidPixelSettingsPanel() {
+        final TableLayout layout = new TableLayout(1);
+        layout.setTablePadding(4, 4);
+        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        layout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
+        layout.setTableWeightX(1.0);
+
+        final JPanel panel = new JPanel(layout);
+        panel.setBorder(BorderFactory.createTitledBorder("Valid Pixel Expression"));
+
+        applyValidPixelExpressionCheckBox = new JCheckBox("Mask at source file");
+        applyValidPixelExpressionCheckBox.setSelected(true);
+        panel.add(applyValidPixelExpressionCheckBox);
+
+
+        transferValidPixelExpressionCheckBox = new JCheckBox("Transfer to output file");
+        transferValidPixelExpressionCheckBox.setSelected(true);
+        panel.add(transferValidPixelExpressionCheckBox);
+
+
+        return panel;
     }
 
     private JPanel createSourceProductPanel() {
@@ -577,7 +658,7 @@ class ReprojectionForm extends JTabbedPane {
                 }
                 final OutputGeometryForm form = new OutputGeometryForm(workCopy);
                 final ModalDialog outputParametersDialog = new OutputParametersDialog(appContext.getApplicationWindow(),
-                                                                                      sourceProduct, workCopy);
+                        sourceProduct, workCopy);
                 outputParametersDialog.setContent(form);
                 if (outputParametersDialog.show() == ModalDialog.ID_OK) {
                     outputGeometryModel = workCopy;
@@ -585,7 +666,7 @@ class ReprojectionForm extends JTabbedPane {
                 }
             } catch (Exception e) {
                 appContext.handleError("Could not create a 'Coordinate Reference System'.\n" +
-                                               e.getMessage(), e);
+                        e.getMessage(), e);
             }
         }
 
@@ -617,8 +698,8 @@ class ReprojectionForm extends JTabbedPane {
                 imageGeometry = ImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
             } else {
                 imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, crs,
-                                                                   null, null, null, null,
-                                                                   null, null, null, null, null);
+                        null, null, null, null,
+                        null, null, null, null, null);
             }
             outputGeometryFormModel.resetToDefaults(imageGeometry);
         }
@@ -655,4 +736,27 @@ class ReprojectionForm extends JTabbedPane {
             return geoCoding != null && geoCoding.canGetGeoPos() && geoCoding.canGetPixelPos();
         }
     }
+
+    private class EditExpressionActionListener implements ActionListener {
+
+        private final Window parentWindow;
+
+        private EditExpressionActionListener(Window parentWindow) {
+            this.parentWindow = parentWindow;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ProductExpressionPane pep = ProductExpressionPane.createBooleanExpressionPane(new Product[]{getSourceProduct()},
+                    getSourceProduct(),
+                    appContext.getPreferences());
+            pep.setCode(expressionArea.getText());
+            final int i = pep.showModalDialog(parentWindow, "Mask Expression Editor");
+            if (i == ModalDialog.ID_OK) {
+                expressionArea.setText(pep.getCode());
+            }
+
+        }
+    }
+
 }
