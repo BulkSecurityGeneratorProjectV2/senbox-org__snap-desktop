@@ -21,6 +21,7 @@ import org.esa.snap.ui.crs.CustomCrsForm;
 import org.esa.snap.ui.crs.OutputGeometryForm;
 import org.esa.snap.ui.crs.OutputGeometryFormModel;
 import org.esa.snap.ui.crs.PredefinedCrsForm;
+import org.esa.snap.ui.product.ProductExpressionPane;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -64,6 +65,14 @@ public class ReprojectionUI extends BaseOperatorUI {
     JCheckBox addDeltaBandsChecker = new JCheckBox("Add delta lat/lon bands");
     JComboBox<String> resampleComboBox = new JComboBox<>(RESAMPLING_IDENTIFIER);
 
+
+    // Components of Masking
+    private boolean applyValidPixelExpression;
+    private JCheckBox applyValidPixelExpressionCheckBox;
+    private boolean transferValidPixelExpression;
+    private JCheckBox transferValidPixelExpressionCheckBox;
+    private JButton editExpressionButton;
+    private JTextArea expressionArea;
 
     //Create panel
     @Override
@@ -109,23 +118,23 @@ public class ReprojectionUI extends BaseOperatorUI {
         paramMap.put("includeTiePointGrids", includeTPcheck.isSelected());
         paramMap.put("addDeltaBands", addDeltaBandsChecker.isSelected());
         paramMap.put("noDataValue", Double.parseDouble(noDataField.getText()));
-       // if (!collocationCrsUI.getRadioButton().isSelected()) {
-            CoordinateReferenceSystem selectedCrs = getSelectedCrs();
-            if (selectedCrs != null) {
-                paramMap.put("crs", selectedCrs.toWKT());
-            } else {
-                paramMap.put("crs", "EPSG:4326");
-            }
-       //   collocationCrsUI.prepareHide();
-       // } else {
-       //     //TODO
-       //     final Map<String, Product> productMap = new HashMap<>(5);
-       //     productMap.put("source", getSourceProduct());
-       //     if (collocationCrsUI.getRadioButton().isSelected()) {
-       //         collocationCrsUI.prepareShow();
-       //         productMap.put("collocateWith", collocationCrsUI.getCollocationProduct());
-       //     }
-       // }
+        // if (!collocationCrsUI.getRadioButton().isSelected()) {
+        CoordinateReferenceSystem selectedCrs = getSelectedCrs();
+        if (selectedCrs != null) {
+            paramMap.put("crs", selectedCrs.toWKT());
+        } else {
+            paramMap.put("crs", "EPSG:4326");
+        }
+        //   collocationCrsUI.prepareHide();
+        // } else {
+        //     //TODO
+        //     final Map<String, Product> productMap = new HashMap<>(5);
+        //     productMap.put("source", getSourceProduct());
+        //     if (collocationCrsUI.getRadioButton().isSelected()) {
+        //         collocationCrsUI.prepareShow();
+        //         productMap.put("collocateWith", collocationCrsUI.getCollocationProduct());
+        //     }
+        // }
 
 
         if (orthoMode) {
@@ -149,6 +158,20 @@ public class ReprojectionUI extends BaseOperatorUI {
             paramMap.put("width", container.getValue("width"));
             paramMap.put("height", container.getValue("height"));
         }
+
+
+        applyValidPixelExpression = applyValidPixelExpressionCheckBox.isSelected();
+        paramMap.put("applyValidPixelExpression", applyValidPixelExpression);
+
+        transferValidPixelExpression = transferValidPixelExpressionCheckBox.isSelected();
+        paramMap.put("transferValidPixelExpression", transferValidPixelExpression);
+
+        if (expressionArea.getText() != null) {
+            paramMap.put("maskExpression", expressionArea.getText());
+        }
+
+
+
     }
 
 
@@ -178,12 +201,18 @@ public class ReprojectionUI extends BaseOperatorUI {
             parameterPanel.add(demSelector);
         }
 
+        parameterPanel.add(createMaskSettingsPanel());
+
+
         //create and add the output setting panel
         parameterPanel.add(createOuputSettingsPanel());
+
 
         //create and add the info panel
         infoForm = new ReprojectionUI.InfoForm();
         parameterPanel.add(infoForm.createUI());
+
+
 
         //add change listener
         crsSelectionPanel.addPropertyChangeListener("crs", evt -> updateCRS());
@@ -242,16 +271,16 @@ public class ReprojectionUI extends BaseOperatorUI {
                 height = container.getValue("height");
             } else {
                 ImageGeometry iGeometry;
-               // final Product collocationProduct = collocationCrsUI.getCollocationProduct();
-               // if (collocationCrsUI.getRadioButton().isSelected() && collocationProduct != null) {
-               //     iGeometry = ImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
-               // } else {
-                    iGeometry = ImageGeometry.createTargetGeometry(sourceProduct, crs,
-                                                                   null, null, null, null,
-                                                                   null, null, null, null,
-                                                                   null);
+                // final Product collocationProduct = collocationCrsUI.getCollocationProduct();
+                // if (collocationCrsUI.getRadioButton().isSelected() && collocationProduct != null) {
+                //     iGeometry = ImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
+                // } else {
+                iGeometry = ImageGeometry.createTargetGeometry(sourceProduct, crs,
+                        null, null, null, null,
+                        null, null, null, null,
+                        null);
 
-               // }
+                // }
                 Rectangle imageRect = iGeometry.getImageRect();
                 width = imageRect.width;
                 height = imageRect.height;
@@ -344,9 +373,9 @@ public class ReprojectionUI extends BaseOperatorUI {
                 wktArea.setText(wkt);
                 final JScrollPane scrollPane = new JScrollPane(wktArea);
                 final ModalDialog dialog = new ModalDialog(appContext.getApplicationWindow(),
-                                                           "Coordinate reference system as well known text",
-                                                           scrollPane,
-                                                           ModalDialog.ID_OK, null);
+                        "Coordinate reference system as well known text",
+                        scrollPane,
+                        ModalDialog.ID_OK, null);
                 dialog.show();
             });
             wktButton.setEnabled(false);
@@ -400,7 +429,90 @@ public class ReprojectionUI extends BaseOperatorUI {
         resampleComboBox.setPrototypeDisplayValue(RESAMPLING_IDENTIFIER[0]);
         outputSettingsPanel.add(resampleComboBox);
 
+
+        transferValidPixelExpressionCheckBox = new JCheckBox("Retain valid pixel expression");
+        transferValidPixelExpressionCheckBox.setSelected(true);
+        outputSettingsPanel.add(transferValidPixelExpressionCheckBox);
+
+
         return outputSettingsPanel;
+    }
+
+
+
+
+
+
+
+
+    private JPanel createMaskSettingsPanel() {
+        final TableLayout maskExpressionLayout = new TableLayout(3);
+        maskExpressionLayout.setTablePadding(4, 4);
+        maskExpressionLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        maskExpressionLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
+        maskExpressionLayout.setTableWeightX(1.0);
+
+        final JPanel maskExpressionPanel = new JPanel(maskExpressionLayout);
+        String maskExpressionToolTip = "Mask expression to apply to the source file(s)";
+
+        editExpressionButton = new JButton("Edit ...");
+        editExpressionButton.setPreferredSize(editExpressionButton.getPreferredSize());
+        editExpressionButton.setMaximumSize(editExpressionButton.getPreferredSize());
+        editExpressionButton.setMinimumSize(editExpressionButton.getPreferredSize());
+        final Window parentWindow = SwingUtilities.getWindowAncestor(editExpressionButton);
+        editExpressionButton.addActionListener(new EditExpressionActionListener(parentWindow));
+        expressionArea = new JTextArea(3, 40);
+        expressionArea.setLineWrap(true);
+
+        JLabel maskExpressionLabel = new JLabel("Expression: ");
+        maskExpressionPanel.add(maskExpressionLabel);
+        maskExpressionPanel.add(new JScrollPane(expressionArea));
+        maskExpressionPanel.add(editExpressionButton);
+
+        maskExpressionPanel.setToolTipText(maskExpressionToolTip);
+        maskExpressionLabel.setToolTipText(maskExpressionToolTip);
+        editExpressionButton.setToolTipText(maskExpressionToolTip);
+        expressionArea.setToolTipText(maskExpressionToolTip);
+
+        applyValidPixelExpressionCheckBox = new JCheckBox("Apply source valid pixel expression");
+        applyValidPixelExpressionCheckBox.setToolTipText("Applies source file valid pixel expression to masking criteria");
+        applyValidPixelExpressionCheckBox.setSelected(true);
+
+        final TableLayout layout = new TableLayout(1);
+        layout.setTablePadding(4, 4);
+        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        layout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
+        layout.setTableWeightX(1.0);
+
+        final JPanel panel = new JPanel(layout);
+        panel.setBorder(BorderFactory.createTitledBorder("Masking"));
+        panel.add(maskExpressionPanel);
+        panel.add(applyValidPixelExpressionCheckBox);
+
+        return panel;
+    }
+
+
+    private class EditExpressionActionListener implements ActionListener {
+
+        private final Window parentWindow;
+
+        private EditExpressionActionListener(Window parentWindow) {
+            this.parentWindow = parentWindow;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ProductExpressionPane pep = ProductExpressionPane.createBooleanExpressionPane(new Product[]{getSourceProduct()},
+                    getSourceProduct(),
+                    appContext.getPreferences());
+            pep.setCode(expressionArea.getText());
+            final int i = pep.showModalDialog(parentWindow, "Mask Expression Editor");
+            if (i == ModalDialog.ID_OK) {
+                expressionArea.setText(pep.getCode());
+            }
+
+        }
     }
 
     private void updateOutputParameterState() {
@@ -430,16 +542,16 @@ public class ReprojectionUI extends BaseOperatorUI {
                 if (outputGeometryModel != null) {
                     workCopy = new OutputGeometryFormModel(outputGeometryModel);
                 } else {
-                   // final Product collocationProduct = collocationCrsUI.getCollocationProduct();
-                   // if (collocationCrsUI.getRadioButton().isSelected() && collocationProduct != null) {
+                    // final Product collocationProduct = collocationCrsUI.getCollocationProduct();
+                    // if (collocationCrsUI.getRadioButton().isSelected() && collocationProduct != null) {
                     //    workCopy = new OutputGeometryFormModel(sourceProduct, collocationProduct);
-                   // } else {
-                        workCopy = new OutputGeometryFormModel(sourceProduct, crs);
-                   // }
+                    // } else {
+                    workCopy = new OutputGeometryFormModel(sourceProduct, crs);
+                    // }
                 }
                 final OutputGeometryForm form = new OutputGeometryForm(workCopy);
                 final ModalDialog outputParametersDialog = new OutputParametersDialog(appContext.getApplicationWindow(),
-                                                                                      sourceProduct, workCopy);
+                        sourceProduct, workCopy);
                 outputParametersDialog.setContent(form);
                 if (outputParametersDialog.show() == ModalDialog.ID_OK) {
                     outputGeometryModel = workCopy;
@@ -447,7 +559,7 @@ public class ReprojectionUI extends BaseOperatorUI {
                 }
             } catch (Exception e) {
                 appContext.handleError("Could not create a 'Coordinate Reference System'.\n" +
-                                               e.getMessage(), e);
+                        e.getMessage(), e);
             }
         }
 
@@ -470,14 +582,14 @@ public class ReprojectionUI extends BaseOperatorUI {
 
         @Override
         protected void onReset() {
-           // final Product collocationProduct = collocationCrsUI.getCollocationProduct();
+            // final Product collocationProduct = collocationCrsUI.getCollocationProduct();
             ImageGeometry imageGeometry;
             //if (collocationCrsUI.getRadioButton().isSelected() && collocationProduct != null) {
             //    imageGeometry = ImageGeometry.createCollocationTargetGeometry(sourceProduct, collocationProduct);
-           // } else {
-                imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, crs,
-                                                                   null, null, null, null,
-                                                                   null, null, null, null, null);
+            // } else {
+            imageGeometry = ImageGeometry.createTargetGeometry(sourceProduct, crs,
+                    null, null, null, null,
+                    null, null, null, null, null);
             //}
             outputGeometryFormModel.resetToDefaults(imageGeometry);
         }

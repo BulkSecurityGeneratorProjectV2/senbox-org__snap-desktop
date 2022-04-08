@@ -265,7 +265,7 @@ class ReprojectionForm extends JTabbedPane {
     private void createUI() {
         addTab("I/O Parameters", createIOPanel());
         addTab("Reprojection Parameters", createParametersPanel());
-        addTab("Validation Masking", createMaskPanel());
+//        addTab("Validation Masking", createMaskPanel());
 
     }
 
@@ -309,30 +309,24 @@ class ReprojectionForm extends JTabbedPane {
             demSelector = new DemSelector();
             parameterPanel.add(demSelector);
         }
+
+        parameterPanel.add(createMaskSettingsPanel());
+
+
         parameterPanel.add(createOuputSettingsPanel());
+
+
         infoForm = new InfoForm();
         parameterPanel.add(infoForm.createUI());
+
+
 
         crsSelectionPanel.addPropertyChangeListener("crs", evt -> updateCRS());
         updateCRS();
         return parameterPanel;
     }
 
-    private JPanel createMaskPanel() {
-        final JPanel parameterPanel = new JPanel();
-        final TableLayout layout = new TableLayout(1);
-        layout.setTablePadding(4, 4);
-        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        layout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
-        layout.setTableWeightX(1.0);
-        parameterPanel.setLayout(layout);
 
-        parameterPanel.add(createValidPixelSettingsPanel());
-        parameterPanel.add(createMaskSettingsPanel());
-        parameterPanel.add(layout.createVerticalSpacer());
-
-        return parameterPanel;
-    }
 
 
     private void updateCRS() {
@@ -536,6 +530,13 @@ class ReprojectionForm extends JTabbedPane {
         context.bind(Model.RESAMPLING_NAME, resampleComboBox);
         outputSettingsPanel.add(resampleComboBox);
 
+
+
+        transferValidPixelExpressionCheckBox = new JCheckBox("Retain valid pixel expression");
+        transferValidPixelExpressionCheckBox.setSelected(true);
+        outputSettingsPanel.add(transferValidPixelExpressionCheckBox);
+
+
         reprojectionContainer.addPropertyChangeListener(Model.PRESERVE_RESOLUTION, evt -> updateOutputParameterState());
 
         return outputSettingsPanel;
@@ -547,15 +548,14 @@ class ReprojectionForm extends JTabbedPane {
     }
 
     private JPanel createMaskSettingsPanel() {
-        final TableLayout layout = new TableLayout(2);
-        layout.setTablePadding(4, 4);
-        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        layout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
-        layout.setTableWeightX(1.0);
+        final TableLayout maskExpressionLayout = new TableLayout(3);
+        maskExpressionLayout.setTablePadding(4, 4);
+        maskExpressionLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        maskExpressionLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
+        maskExpressionLayout.setTableWeightX(1.0);
 
-        final JPanel panel = new JPanel(layout);
-        panel.setBorder(BorderFactory.createTitledBorder("Mask Expression"));
-
+        final JPanel maskExpressionPanel = new JPanel(maskExpressionLayout);
+        String maskExpressionToolTip = "Mask expression to apply to the source file(s)";
 
         editExpressionButton = new JButton("Edit ...");
         editExpressionButton.setPreferredSize(editExpressionButton.getPreferredSize());
@@ -565,16 +565,21 @@ class ReprojectionForm extends JTabbedPane {
         editExpressionButton.addActionListener(new EditExpressionActionListener(parentWindow));
         expressionArea = new JTextArea(3, 40);
         expressionArea.setLineWrap(true);
-        panel.add(new JScrollPane(expressionArea));
-        panel.add(editExpressionButton);
 
+        JLabel maskExpressionLabel = new JLabel("Expression: ");
+        maskExpressionPanel.add(maskExpressionLabel);
+        maskExpressionPanel.add(new JScrollPane(expressionArea));
+        maskExpressionPanel.add(editExpressionButton);
 
+        maskExpressionPanel.setToolTipText(maskExpressionToolTip);
+        maskExpressionLabel.setToolTipText(maskExpressionToolTip);
+        editExpressionButton.setToolTipText(maskExpressionToolTip);
+        expressionArea.setToolTipText(maskExpressionToolTip);
 
-        return panel;
-    }
+        applyValidPixelExpressionCheckBox = new JCheckBox("Apply source valid pixel expression");
+        applyValidPixelExpressionCheckBox.setToolTipText("Applies source file valid pixel expression to masking criteria");
+        applyValidPixelExpressionCheckBox.setSelected(true);
 
-
-    private JPanel createValidPixelSettingsPanel() {
         final TableLayout layout = new TableLayout(1);
         layout.setTablePadding(4, 4);
         layout.setTableFill(TableLayout.Fill.HORIZONTAL);
@@ -582,20 +587,16 @@ class ReprojectionForm extends JTabbedPane {
         layout.setTableWeightX(1.0);
 
         final JPanel panel = new JPanel(layout);
-        panel.setBorder(BorderFactory.createTitledBorder("Valid Pixel Expression"));
-
-        applyValidPixelExpressionCheckBox = new JCheckBox("Mask at source file");
-        applyValidPixelExpressionCheckBox.setSelected(true);
+        panel.setBorder(BorderFactory.createTitledBorder("Masking"));
+        panel.add(maskExpressionPanel);
         panel.add(applyValidPixelExpressionCheckBox);
 
-
-        transferValidPixelExpressionCheckBox = new JCheckBox("Transfer to output file");
-        transferValidPixelExpressionCheckBox.setSelected(true);
-        panel.add(transferValidPixelExpressionCheckBox);
-
+//        panel.add(layout.createVerticalSpacer());
 
         return panel;
     }
+
+
 
     private JPanel createSourceProductPanel() {
         final JPanel panel = sourceProductSelector.createDefaultPanel();
