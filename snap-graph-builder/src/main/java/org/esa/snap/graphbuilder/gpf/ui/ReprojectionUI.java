@@ -452,8 +452,8 @@ public class ReprojectionUI extends BaseOperatorUI {
 
 
     private JPanel createMaskSettingsPanel() {
-        final TableLayout maskExpressionLayout = new TableLayout(3);
-        maskExpressionLayout.setTablePadding(4, 4);
+        final TableLayout maskExpressionLayout = new TableLayout(2);
+        maskExpressionLayout.setTablePadding(4, 0);
         maskExpressionLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
         maskExpressionLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
         maskExpressionLayout.setTableWeightX(1.0);
@@ -461,7 +461,7 @@ public class ReprojectionUI extends BaseOperatorUI {
         maskExpressionPanel = new JPanel(maskExpressionLayout);
         String maskExpressionToolTip = "Mask expression to apply to the source file(s)";
 
-        editExpressionButton = new JButton("Edit ...");
+        editExpressionButton = new JButton("Edit Expression");
         editExpressionButton.setPreferredSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMaximumSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMinimumSize(editExpressionButton.getPreferredSize());
@@ -473,7 +473,6 @@ public class ReprojectionUI extends BaseOperatorUI {
         JLabel maskExpressionLabel = new JLabel("Expression: ");
         maskExpressionPanel.add(maskExpressionLabel);
         maskExpressionPanel.add(new JScrollPane(expressionArea));
-        maskExpressionPanel.add(editExpressionButton);
 
         maskExpressionPanel.setToolTipText(maskExpressionToolTip);
         maskExpressionLabel.setToolTipText(maskExpressionToolTip);
@@ -484,6 +483,21 @@ public class ReprojectionUI extends BaseOperatorUI {
         applyValidPixelExpressionCheckBox.setToolTipText("Applies source file valid pixel expression to masking criteria");
         applyValidPixelExpressionCheckBox.setSelected(true);
 
+        final TableLayout secondRowLayout = new TableLayout(3);
+        secondRowLayout.setTablePadding(4, 0);
+        secondRowLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        secondRowLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
+        secondRowLayout.setTableWeightX(1.0);
+
+        final JPanel secondRowPanel = new JPanel(secondRowLayout);
+        secondRowPanel.add(applyValidPixelExpressionCheckBox);
+
+        secondRowPanel.add(secondRowLayout.createHorizontalSpacer());
+
+        secondRowLayout.setTableAnchor(TableLayout.Anchor.NORTHEAST);
+        secondRowPanel.setLayout(secondRowLayout);
+        secondRowPanel.add(editExpressionButton);
+
         final TableLayout layout = new TableLayout(1);
         layout.setTablePadding(4, 4);
         layout.setTableFill(TableLayout.Fill.HORIZONTAL);
@@ -493,7 +507,7 @@ public class ReprojectionUI extends BaseOperatorUI {
         final JPanel panel = new JPanel(layout);
         panel.setBorder(BorderFactory.createTitledBorder("Masking"));
         panel.add(maskExpressionPanel);
-        panel.add(applyValidPixelExpressionCheckBox);
+        panel.add(secondRowPanel);
 
         return panel;
     }
