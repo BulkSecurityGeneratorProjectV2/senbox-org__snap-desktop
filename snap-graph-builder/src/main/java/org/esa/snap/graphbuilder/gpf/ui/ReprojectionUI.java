@@ -9,6 +9,7 @@ import org.esa.snap.core.datamodel.ImageGeometry;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductFilter;
 import org.esa.snap.core.gpf.ui.CollocationCrsForm;
+import org.esa.snap.core.util.Debug;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.ui.AbstractDialog;
@@ -31,6 +32,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
 /**
  * User interface for Reprojection
@@ -52,6 +54,8 @@ public class ReprojectionUI extends BaseOperatorUI {
     private JButton outputParamButton;
     private ReprojectionUI.InfoForm infoForm;
     private CoordinateReferenceSystem crs;
+
+    private JPanel maskExpressionPanel;
 
     //TODO add collocationCRSForm
     //private CollocationCrsForm collocationCrsUI;
@@ -219,6 +223,7 @@ public class ReprojectionUI extends BaseOperatorUI {
         updateCRS();
         return parameterPanel;
     }
+
 
 
     Product getSourceProduct() {
@@ -409,6 +414,7 @@ public class ReprojectionUI extends BaseOperatorUI {
             }
 
         });
+
         outputSettingsPanel.add(preserveResolutionCheckBox);
 
         outputSettingsPanel.add(includeTPcheck);
@@ -452,14 +458,14 @@ public class ReprojectionUI extends BaseOperatorUI {
         maskExpressionLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
         maskExpressionLayout.setTableWeightX(1.0);
 
-        final JPanel maskExpressionPanel = new JPanel(maskExpressionLayout);
+        maskExpressionPanel = new JPanel(maskExpressionLayout);
         String maskExpressionToolTip = "Mask expression to apply to the source file(s)";
 
         editExpressionButton = new JButton("Edit ...");
         editExpressionButton.setPreferredSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMaximumSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMinimumSize(editExpressionButton.getPreferredSize());
-        final Window parentWindow = SwingUtilities.getWindowAncestor(editExpressionButton);
+        final Window parentWindow = SwingUtilities.getWindowAncestor(maskExpressionPanel);
         editExpressionButton.addActionListener(new EditExpressionActionListener(parentWindow));
         expressionArea = new JTextArea(3, 40);
         expressionArea.setLineWrap(true);
