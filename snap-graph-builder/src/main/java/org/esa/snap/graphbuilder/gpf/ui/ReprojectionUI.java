@@ -33,6 +33,10 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+import java.util.prefs.Preferences;
+
+import static org.esa.snap.rcp.preferences.general.ReprojectionController.*;
+
 
 /**
  * User interface for Reprojection
@@ -71,7 +75,7 @@ public class ReprojectionUI extends BaseOperatorUI {
 
 
     // Components of Masking
-    private boolean applyValidPixelExpression;
+    private boolean applyValidPixelExpression = APPLY_VALID_PIXEL_EXPRESSION_DEFAULT;
     private JCheckBox applyValidPixelExpressionCheckBox;
     private boolean transferValidPixelExpression;
     private JCheckBox transferValidPixelExpressionCheckBox;
@@ -452,6 +456,9 @@ public class ReprojectionUI extends BaseOperatorUI {
 
 
     private JPanel createMaskSettingsPanel() {
+        Preferences preferences = SnapApp.getDefault().getPreferences();
+
+
         final TableLayout maskExpressionLayout = new TableLayout(2);
         maskExpressionLayout.setTablePadding(4, 0);
         maskExpressionLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
@@ -478,10 +485,14 @@ public class ReprojectionUI extends BaseOperatorUI {
         maskExpressionLabel.setToolTipText(maskExpressionToolTip);
         editExpressionButton.setToolTipText(maskExpressionToolTip);
         expressionArea.setToolTipText(maskExpressionToolTip);
+        String maskExpressionText = preferences.get(MASK_EXPRESSION_KEY, MASK_EXPRESSION_DEFAULT);
+        expressionArea.setText(maskExpressionText);
 
-        applyValidPixelExpressionCheckBox = new JCheckBox("Apply source valid pixel expression");
-        applyValidPixelExpressionCheckBox.setToolTipText("Applies source file valid pixel expression to masking criteria");
-        applyValidPixelExpressionCheckBox.setSelected(true);
+
+        boolean applyValidPixelExpression = preferences.getBoolean(APPLY_VALID_PIXEL_EXPRESSION_KEY, APPLY_VALID_PIXEL_EXPRESSION_DEFAULT);
+        applyValidPixelExpressionCheckBox = new JCheckBox(APPLY_VALID_PIXEL_EXPRESSION_LABEL);
+        applyValidPixelExpressionCheckBox.setToolTipText(APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP);
+        applyValidPixelExpressionCheckBox.setSelected(applyValidPixelExpression);
 
         final TableLayout secondRowLayout = new TableLayout(3);
         secondRowLayout.setTablePadding(4, 0);

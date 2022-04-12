@@ -25,11 +25,7 @@ import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.GeoPos;
-import org.esa.snap.core.datamodel.ImageGeometry;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductFilter;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.ui.CollocationCrsForm;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.gpf.ui.TargetProductSelector;
@@ -37,6 +33,8 @@ import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
 import org.esa.snap.core.param.ParamParseException;
 import org.esa.snap.core.param.ParamValidateException;
 import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.ui.AbstractDialog;
 import org.esa.snap.ui.AppContext;
 import org.esa.snap.ui.DemSelector;
@@ -67,6 +65,9 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.Preferences;
+
+import static org.esa.snap.rcp.preferences.general.ReprojectionController.*;
 
 /**
  * @author Marco Zuehlke
@@ -101,6 +102,8 @@ class ReprojectionForm extends JTabbedPane {
     private boolean transferValidPixelExpression;
     private JCheckBox transferValidPixelExpressionCheckBox;
 
+
+    private JPanel maskExpressionPanel;
 
     private JButton editExpressionButton;
     private JTextArea expressionArea;
@@ -557,20 +560,22 @@ class ReprojectionForm extends JTabbedPane {
     }
 
     private JPanel createMaskSettingsPanel() {
+        Preferences preferences = SnapApp.getDefault().getPreferences();
+
         final TableLayout maskExpressionLayout = new TableLayout(3);
         maskExpressionLayout.setTablePadding(4, 0);
         maskExpressionLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
         maskExpressionLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
         maskExpressionLayout.setTableWeightX(1.0);
 
-        final JPanel maskExpressionPanel = new JPanel(maskExpressionLayout);
+        maskExpressionPanel = new JPanel(maskExpressionLayout);
         String maskExpressionToolTip = "Mask expression to apply to the source file(s)";
 
         editExpressionButton = new JButton("Edit Expression");
         editExpressionButton.setPreferredSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMaximumSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMinimumSize(editExpressionButton.getPreferredSize());
-        final Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        final Window parentWindow = SwingUtilities.getWindowAncestor(maskExpressionPanel);
         editExpressionButton.addActionListener(new EditExpressionActionListener(parentWindow));
         expressionArea = new JTextArea(3, 40);
         expressionArea.setLineWrap(true);
@@ -584,9 +589,18 @@ class ReprojectionForm extends JTabbedPane {
         editExpressionButton.setToolTipText(maskExpressionToolTip);
         expressionArea.setToolTipText(maskExpressionToolTip);
 
-        applyValidPixelExpressionCheckBox = new JCheckBox("Apply source valid pixel expression");
-        applyValidPixelExpressionCheckBox.setToolTipText("Applies source file valid pixel expression to masking criteria");
-        applyValidPixelExpressionCheckBox.setSelected(true);
+        String maskExpressionText = preferences.get(MASK_EXPRESSION_KEY, MASK_EXPRESSION_DEFAULT);
+        expressionArea.setText(maskExpressionText);
+
+
+
+
+
+
+        boolean applyValidPixelExpression = preferences.getBoolean(APPLY_VALID_PIXEL_EXPRESSION_KEY, APPLY_VALID_PIXEL_EXPRESSION_DEFAULT);
+        applyValidPixelExpressionCheckBox = new JCheckBox(APPLY_VALID_PIXEL_EXPRESSION_LABEL);
+        applyValidPixelExpressionCheckBox.setToolTipText(APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP);
+        applyValidPixelExpressionCheckBox.setSelected(applyValidPixelExpression);
 
         final TableLayout secondRowLayout = new TableLayout(3);
         secondRowLayout.setTablePadding(4, 0);
