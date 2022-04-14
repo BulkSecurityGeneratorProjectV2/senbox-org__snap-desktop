@@ -58,23 +58,71 @@ public final class ReprojectionController extends DefaultConfigController {
     // Preferences property prefix
     private static final String PROPERTY_ROOT_KEY = "reprojection";
 
+    // Output Settings
+    private static final String PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX = PROPERTY_ROOT_KEY + ".output.settings";
+
+    public static final String PROPERTY_OUTPUT_SETTINGS_SECTION_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".section";
+    public static final String PROPERTY_OUTPUT_SETTINGS_SECTION_LABEL = "Output Settings";
+    public static final String PROPERTY_OUTPUT_SETTINGS_SECTION_TOOLTIP = "Output settings";
+
+    public static final String PROPERTY_PRESERVE_RESOLUTION_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".preserve.resolution";
+    public static final String PROPERTY_PRESERVE_RESOLUTION_LABEL = "Preserve resolution";
+    public static final String PROPERTY_PRESERVE_RESOLUTION_TOOLTIP = "Preserve resolution";
+    public static final String PROPERTY_RESOLUTION_PARAMETERS_BUTTON_NAME = "Output Parameters...";
+    public static boolean PROPERTY_PRESERVE_RESOLUTION_DEFAULT = true;
+
+    public static final String PROPERTY_INCLUDE_TIE_POINT_GRIDS_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".include.tie.point.grids";
+    public static final String PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL = "Reproject tie-point grids";
+    public static final String PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP = "Reproject tie-point grids";
+    public static boolean PROPERTY_INCLUDE_TIE_POINT_GRIDS_DEFAULT = true;
+
+    public static final String PROPERTY_ADD_DELTA_BANDS_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".add.delta.bands";
+    public static final String PROPERTY_ADD_DELTA_BANDS_LABEL = "Add delta lat/lon bands";
+    public static final String PROPERTY_ADD_DELTA_BANDS_TOOLTIP = "Add delta lat/lon bands";
+    public static boolean PROPERTY_ADD_DELTA_BANDS_DEFAULT = false;
+
+    public static final String PROPERTY_NO_DATA_VALUE_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".no.data.value";
+    public static final String PROPERTY_NO_DATA_VALUE_LABEL = "No-data value";
+    public static final String PROPERTY_NO_DATA_VALUE_TOOLTIP = "No-data value";
+    public static double PROPERTY_NO_DATA_VALUE_DEFAULT = Double.NaN;
+
+    public static final String PROPERTY_RESAMPLING_METHOD_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".resampling.method";
+    public static final String PROPERTY_RESAMPLING_METHOD_LABEL = "Resampling method";
+    public static final String PROPERTY_RESAMPLING_METHOD_TOOLTIP = "Resampling method";
+    public static final String PROPERTY_RESAMPLING_METHOD_OPTION_NEAREST = "Nearest";
+    public static final String PROPERTY_RESAMPLING_METHOD_OPTION_BILINEAR = "Bilinear";
+    public static final String PROPERTY_RESAMPLING_METHOD_OPTION_BICUBIC = "Bicubic";
+    public static final String[] PROPERTY_RESAMPLING_METHOD_OPTIONS = {
+            PROPERTY_RESAMPLING_METHOD_OPTION_NEAREST,
+            PROPERTY_RESAMPLING_METHOD_OPTION_BILINEAR,
+            PROPERTY_RESAMPLING_METHOD_OPTION_BICUBIC};
+    public static String PROPERTY_RESAMPLING_METHOD_DEFAULT = PROPERTY_RESAMPLING_METHOD_OPTION_NEAREST;
+
+    public static final String PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".retain.valid.pixel.expression";
+    public static final String PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_LABEL = "Retain valid pixel expression";
+    public static final String PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP = "Retain valid pixel expressions";
+    public static boolean PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_DEFAULT = false;
+
+
     // Masking
 
     private static final String PROPERTY_MASKING_KEY_SUFFIX = PROPERTY_ROOT_KEY + ".masking";
 
-    public static final String PROPERTY_MASKING_KEY_SECTION_KEY = PROPERTY_MASKING_KEY_SUFFIX + ".section";
-    public static final String PROPERTY_MASKING_KEY_SECTION_LABEL = "Masking";
-    public static final String PROPERTY_MASKING_KEY_SECTION_TOOLTIP = "Masking options";
+    public static final String PROPERTY_MASKING_SECTION_KEY = PROPERTY_MASKING_KEY_SUFFIX + ".section";
+    public static final String PROPERTY_MASKING_SECTION_LABEL = "Masking";
+    public static final String PROPERTY_MASKING_SECTION_TOOLTIP = "Masking options";
 
-    public static final String MASK_EXPRESSION_KEY = PROPERTY_MASKING_KEY_SUFFIX + ".mask.expression";
-    public static final String MASK_EXPRESSION_LABEL = "Expression";
-    public static final String MASK_EXPRESSION_TOOLTIP = "Mask expression to apply to the source file(s)";
-    public static String MASK_EXPRESSION_DEFAULT = "";
+    public static final String PROPERTY_MASK_EXPRESSION_KEY = PROPERTY_MASKING_KEY_SUFFIX + ".mask.expression";
+    public static final String PROPERTY_MASK_EXPRESSION_LABEL = "Expression";
+    public static final String PROPERTY_MASK_EXPRESSION_TOOLTIP = "Mask expression to apply to the source file(s)";
+    public static String PROPERTY_MASK_EXPRESSION_DEFAULT = "";
+    public static final String PROPERTY_MASK_EXPRESSION_BUTTON_NAME = "Edit Expression";
 
-    public static final String APPLY_VALID_PIXEL_EXPRESSION_KEY = PROPERTY_MASKING_KEY_SUFFIX + ".apply.valid.pixel.expression";
-    public static final String APPLY_VALID_PIXEL_EXPRESSION_LABEL = "Apply source valid pixel expression";
-    public static final String APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP = "Applies source file valid pixel expression to masking criteria";
-    public static boolean APPLY_VALID_PIXEL_EXPRESSION_DEFAULT = true;
+
+    public static final String PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_KEY = PROPERTY_MASKING_KEY_SUFFIX + ".apply.valid.pixel.expression";
+    public static final String PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_LABEL = "Apply source valid pixel expression";
+    public static final String PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP = "Applies source file valid pixel expression to masking criteria";
+    public static boolean PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_DEFAULT = true;
 
 
 
@@ -120,16 +168,19 @@ public final class ReprojectionController extends DefaultConfigController {
     @Override
     protected JPanel createPanel(BindingContext context) {
 
+        initPropertyDefaults(context, PROPERTY_OUTPUT_SETTINGS_SECTION_KEY, true);
+        initPropertyDefaults(context, PROPERTY_PRESERVE_RESOLUTION_KEY, PROPERTY_PRESERVE_RESOLUTION_DEFAULT);
+        initPropertyDefaults(context, PROPERTY_INCLUDE_TIE_POINT_GRIDS_KEY, PROPERTY_INCLUDE_TIE_POINT_GRIDS_DEFAULT);
+        initPropertyDefaults(context, PROPERTY_ADD_DELTA_BANDS_KEY, PROPERTY_ADD_DELTA_BANDS_DEFAULT);
+        initPropertyDefaults(context, PROPERTY_NO_DATA_VALUE_KEY, PROPERTY_NO_DATA_VALUE_DEFAULT);
+        initPropertyDefaults(context, PROPERTY_RESAMPLING_METHOD_KEY, PROPERTY_RESAMPLING_METHOD_DEFAULT);
+        initPropertyDefaults(context, PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_KEY, PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_DEFAULT);
 
-        initPropertyDefaults(context, PROPERTY_MASKING_KEY_SECTION_KEY, true);
-        initPropertyDefaults(context, MASK_EXPRESSION_KEY, MASK_EXPRESSION_DEFAULT);
-        initPropertyDefaults(context, APPLY_VALID_PIXEL_EXPRESSION_KEY, APPLY_VALID_PIXEL_EXPRESSION_DEFAULT);
-
-
-
+        initPropertyDefaults(context, PROPERTY_MASKING_SECTION_KEY, true);
+        initPropertyDefaults(context, PROPERTY_MASK_EXPRESSION_KEY, PROPERTY_MASK_EXPRESSION_DEFAULT);
+        initPropertyDefaults(context, PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_KEY, PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_DEFAULT);
 
         restoreDefaults =  initPropertyDefaults(context, PROPERTY_RESTORE_DEFAULTS_NAME, PROPERTY_RESTORE_DEFAULTS_DEFAULT);
-
 
 
 
@@ -336,22 +387,67 @@ public final class ReprojectionController extends DefaultConfigController {
     @SuppressWarnings("UnusedDeclaration")
     static class GeneralLayerBean {
 
+
+        // Output Settings
+
+        @Preference(label = PROPERTY_OUTPUT_SETTINGS_SECTION_LABEL,
+                key = PROPERTY_OUTPUT_SETTINGS_SECTION_KEY,
+                description = PROPERTY_OUTPUT_SETTINGS_SECTION_TOOLTIP)
+        boolean outputSettingsSection = true;
+
+        @Preference(label = PROPERTY_PRESERVE_RESOLUTION_LABEL,
+                key = PROPERTY_PRESERVE_RESOLUTION_KEY,
+                description = PROPERTY_PRESERVE_RESOLUTION_TOOLTIP)
+        boolean preserveResolution = PROPERTY_PRESERVE_RESOLUTION_DEFAULT;
+
+        @Preference(label = PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL,
+                key = PROPERTY_INCLUDE_TIE_POINT_GRIDS_KEY,
+                description = PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP)
+        boolean includeTiePointGrids = PROPERTY_INCLUDE_TIE_POINT_GRIDS_DEFAULT;
+
+        @Preference(label = PROPERTY_ADD_DELTA_BANDS_LABEL,
+                key = PROPERTY_ADD_DELTA_BANDS_KEY,
+                description = PROPERTY_ADD_DELTA_BANDS_TOOLTIP)
+        boolean addDeltaBands = PROPERTY_ADD_DELTA_BANDS_DEFAULT;
+
+        @Preference(label = PROPERTY_NO_DATA_VALUE_LABEL,
+                key = PROPERTY_NO_DATA_VALUE_KEY,
+                description = PROPERTY_NO_DATA_VALUE_TOOLTIP)
+        double noDataValue = PROPERTY_NO_DATA_VALUE_DEFAULT;
+
+        @Preference(label = PROPERTY_RESAMPLING_METHOD_LABEL,
+                key = PROPERTY_RESAMPLING_METHOD_KEY,
+            description = PROPERTY_RESAMPLING_METHOD_TOOLTIP,
+                valueSet = {PROPERTY_RESAMPLING_METHOD_OPTION_NEAREST,
+                        PROPERTY_RESAMPLING_METHOD_OPTION_BILINEAR,
+                        PROPERTY_RESAMPLING_METHOD_OPTION_BICUBIC})
+        String resamplingMethod = PROPERTY_RESAMPLING_METHOD_DEFAULT;
+
+        @Preference(label = PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_LABEL,
+                key = PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_KEY,
+            description = PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP)
+        boolean retainValidPixelExpression = PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_DEFAULT;
+
+
+
+
         // Masking
 
-        @Preference(label = PROPERTY_MASKING_KEY_SECTION_LABEL,
-                key = PROPERTY_MASKING_KEY_SECTION_KEY,
-                description = PROPERTY_MASKING_KEY_SECTION_TOOLTIP)
+        @Preference(label = PROPERTY_MASKING_SECTION_LABEL,
+                key = PROPERTY_MASKING_SECTION_KEY,
+                description = PROPERTY_MASKING_SECTION_TOOLTIP)
         boolean defaultPaletteSection = true;
 
-        @Preference(label = MASK_EXPRESSION_LABEL,
-                key = MASK_EXPRESSION_KEY,
-                description = MASK_EXPRESSION_TOOLTIP)
-        String maskExpression = MASK_EXPRESSION_DEFAULT;
+        @Preference(label = PROPERTY_MASK_EXPRESSION_LABEL,
+                key = PROPERTY_MASK_EXPRESSION_KEY,
+                description = PROPERTY_MASK_EXPRESSION_TOOLTIP)
+        String maskExpression = PROPERTY_MASK_EXPRESSION_DEFAULT;
 
-        @Preference(label = APPLY_VALID_PIXEL_EXPRESSION_LABEL,
-                key = APPLY_VALID_PIXEL_EXPRESSION_KEY,
-                description = APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP)
-        boolean grayScaleCpd = APPLY_VALID_PIXEL_EXPRESSION_DEFAULT;
+        @Preference(label = PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_LABEL,
+                key = PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_KEY,
+                description = PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP)
+        boolean grayScaleCpd = PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_DEFAULT;
+
 
 
 

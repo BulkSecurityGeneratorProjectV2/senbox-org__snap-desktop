@@ -33,7 +33,6 @@ import org.esa.snap.core.gpf.ui.TargetProductSelectorModel;
 import org.esa.snap.core.param.ParamParseException;
 import org.esa.snap.core.param.ParamValidateException;
 import org.esa.snap.core.util.ProductUtils;
-import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.ui.AbstractDialog;
 import org.esa.snap.ui.AppContext;
@@ -125,6 +124,8 @@ class ReprojectionForm extends JTabbedPane {
         this.reprojectionContainer = PropertyContainer.createObjectBacked(reprojectionModel);
         createUI();
     }
+
+
 
     void updateParameterMap(Map<String, Object> parameterMap) {
         parameterMap.clear();
@@ -481,6 +482,10 @@ class ReprojectionForm extends JTabbedPane {
     }
 
     private JPanel createOuputSettingsPanel() {
+
+        Preferences preferences = SnapApp.getDefault().getPreferences();
+
+
         final TableLayout tableLayout = new TableLayout(3);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
         tableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
@@ -494,11 +499,12 @@ class ReprojectionForm extends JTabbedPane {
         tableLayout.setCellPadding(1, 0, new Insets(4, 24, 4, 20));
 
         final JPanel outputSettingsPanel = new JPanel(tableLayout);
-        outputSettingsPanel.setBorder(BorderFactory.createTitledBorder("Output Settings"));
+        outputSettingsPanel.setBorder(BorderFactory.createTitledBorder(PROPERTY_OUTPUT_SETTINGS_SECTION_LABEL));
 
         final BindingContext context = new BindingContext(reprojectionContainer);
 
-        final JCheckBox preserveResolutionCheckBox = new JCheckBox("Preserve resolution");
+        final JCheckBox preserveResolutionCheckBox = new JCheckBox(PROPERTY_PRESERVE_RESOLUTION_LABEL);
+        preserveResolutionCheckBox.setToolTipText(PROPERTY_PRESERVE_RESOLUTION_TOOLTIP);
         context.bind(Model.PRESERVE_RESOLUTION, preserveResolutionCheckBox);
         collocationCrsUI.getCrsUI().addPropertyChangeListener("collocate", evt -> {
             final boolean collocate = (Boolean) evt.getNewValue();
@@ -508,7 +514,8 @@ class ReprojectionForm extends JTabbedPane {
         });
         outputSettingsPanel.add(preserveResolutionCheckBox);
 
-        JCheckBox includeTPcheck = new JCheckBox("Reproject tie-point grids", true);
+        JCheckBox includeTPcheck = new JCheckBox(PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL);
+        includeTPcheck.setToolTipText(PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP);
         context.bind(Model.REPROJ_TIEPOINTS, includeTPcheck);
         outputSettingsPanel.add(includeTPcheck);
 
@@ -521,32 +528,48 @@ class ReprojectionForm extends JTabbedPane {
 
         });
 
-        outputParamButton = new JButton("Output Parameters...");
+        outputParamButton = new JButton(PROPERTY_RESOLUTION_PARAMETERS_BUTTON_NAME);
         outputParamButton.setEnabled(!reprojectionModel.preserveResolution);
         outputParamButton.addActionListener(new OutputParamActionListener());
         outputSettingsPanel.add(outputParamButton);
 
-        outputSettingsPanel.add(new JLabel("No-data value:"));
+        outputSettingsPanel.add(new JLabel(PROPERTY_NO_DATA_VALUE_LABEL));
+
         final JTextField noDataField = new JTextField();
+        noDataField.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
 
         outputSettingsPanel.add(noDataField);
         context.bind(Model.NO_DATA_VALUE, noDataField);
 
-        JCheckBox addDeltaBandsChecker = new JCheckBox("Add delta lat/lon bands");
+        // Add Delta Bands Component
+        JCheckBox addDeltaBandsChecker = new JCheckBox(PROPERTY_ADD_DELTA_BANDS_LABEL);
+        addDeltaBandsChecker.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
         outputSettingsPanel.add(addDeltaBandsChecker);
         context.bind(Model.ADD_DELTA_BANDS, addDeltaBandsChecker);
 
-        outputSettingsPanel.add(new JLabel("Resampling method:"));
-        JComboBox<String> resampleComboBox = new JComboBox<>(RESAMPLING_IDENTIFIER);
-        resampleComboBox.setPrototypeDisplayValue(RESAMPLING_IDENTIFIER[0]);
+
+        // Resampling Method Component
+        JLabel resamplingMethodLabel = new JLabel(PROPERTY_RESAMPLING_METHOD_LABEL);
+        String resamplingMethodPreference = preferences.get(PROPERTY_RESAMPLING_METHOD_KEY, PROPERTY_RESAMPLING_METHOD_DEFAULT);
+        JComboBox<String> resampleComboBox = new JComboBox<>(PROPERTY_RESAMPLING_METHOD_OPTIONS);
+        resampleComboBox.setPrototypeDisplayValue(resamplingMethodPreference);
+        resampleComboBox.setSelectedItem(resamplingMethodPreference);
+        resamplingMethodLabel.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
+        resampleComboBox.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
         context.bind(Model.RESAMPLING_NAME, resampleComboBox);
+        outputSettingsPanel.add(resamplingMethodLabel);
         outputSettingsPanel.add(resampleComboBox);
 
 
-
-        transferValidPixelExpressionCheckBox = new JCheckBox("Retain valid pixel expression");
-        transferValidPixelExpressionCheckBox.setSelected(true);
+        boolean retainValidPixelExpressionPreference = preferences.getBoolean(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_KEY, PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_DEFAULT);
+        transferValidPixelExpressionCheckBox = new JCheckBox(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_LABEL);
+        transferValidPixelExpressionCheckBox.setSelected(retainValidPixelExpressionPreference);
+        transferValidPixelExpressionCheckBox.setToolTipText(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP);
         outputSettingsPanel.add(transferValidPixelExpressionCheckBox);
+
+
+
+
 
 
         reprojectionContainer.addPropertyChangeListener(Model.PRESERVE_RESOLUTION, evt -> updateOutputParameterState());
@@ -562,16 +585,15 @@ class ReprojectionForm extends JTabbedPane {
     private JPanel createMaskSettingsPanel() {
         Preferences preferences = SnapApp.getDefault().getPreferences();
 
-        final TableLayout maskExpressionLayout = new TableLayout(3);
+        final TableLayout maskExpressionLayout = new TableLayout(2);
         maskExpressionLayout.setTablePadding(4, 0);
         maskExpressionLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
         maskExpressionLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
         maskExpressionLayout.setTableWeightX(1.0);
 
         maskExpressionPanel = new JPanel(maskExpressionLayout);
-        String maskExpressionToolTip = "Mask expression to apply to the source file(s)";
 
-        editExpressionButton = new JButton("Edit Expression");
+        editExpressionButton = new JButton(PROPERTY_MASK_EXPRESSION_BUTTON_NAME);
         editExpressionButton.setPreferredSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMaximumSize(editExpressionButton.getPreferredSize());
         editExpressionButton.setMinimumSize(editExpressionButton.getPreferredSize());
@@ -580,27 +602,22 @@ class ReprojectionForm extends JTabbedPane {
         expressionArea = new JTextArea(3, 40);
         expressionArea.setLineWrap(true);
 
-        JLabel maskExpressionLabel = new JLabel("Expression: ");
+        JLabel maskExpressionLabel = new JLabel(PROPERTY_MASK_EXPRESSION_LABEL);
         maskExpressionPanel.add(maskExpressionLabel);
         maskExpressionPanel.add(new JScrollPane(expressionArea));
 
-        maskExpressionPanel.setToolTipText(maskExpressionToolTip);
-        maskExpressionLabel.setToolTipText(maskExpressionToolTip);
-        editExpressionButton.setToolTipText(maskExpressionToolTip);
-        expressionArea.setToolTipText(maskExpressionToolTip);
+        maskExpressionPanel.setToolTipText(PROPERTY_MASK_EXPRESSION_TOOLTIP);
+        maskExpressionLabel.setToolTipText(PROPERTY_MASK_EXPRESSION_TOOLTIP);
+        editExpressionButton.setToolTipText(PROPERTY_MASK_EXPRESSION_TOOLTIP);
+        expressionArea.setToolTipText(PROPERTY_MASK_EXPRESSION_TOOLTIP);
 
-        String maskExpressionText = preferences.get(MASK_EXPRESSION_KEY, MASK_EXPRESSION_DEFAULT);
+        String maskExpressionText = preferences.get(PROPERTY_MASK_EXPRESSION_KEY, PROPERTY_MASK_EXPRESSION_DEFAULT);
         expressionArea.setText(maskExpressionText);
 
-
-
-
-
-
-        boolean applyValidPixelExpression = preferences.getBoolean(APPLY_VALID_PIXEL_EXPRESSION_KEY, APPLY_VALID_PIXEL_EXPRESSION_DEFAULT);
-        applyValidPixelExpressionCheckBox = new JCheckBox(APPLY_VALID_PIXEL_EXPRESSION_LABEL);
-        applyValidPixelExpressionCheckBox.setToolTipText(APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP);
-        applyValidPixelExpressionCheckBox.setSelected(applyValidPixelExpression);
+        boolean applyValidPixelExpressionPreference = preferences.getBoolean(PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_KEY, PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_DEFAULT);
+        applyValidPixelExpressionCheckBox = new JCheckBox(PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_LABEL);
+        applyValidPixelExpressionCheckBox.setToolTipText(PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_TOOLTIP);
+        applyValidPixelExpressionCheckBox.setSelected(applyValidPixelExpressionPreference);
 
         final TableLayout secondRowLayout = new TableLayout(3);
         secondRowLayout.setTablePadding(4, 0);
@@ -624,7 +641,7 @@ class ReprojectionForm extends JTabbedPane {
         layout.setTableWeightX(1.0);
 
         final JPanel panel = new JPanel(layout);
-        panel.setBorder(BorderFactory.createTitledBorder("Masking"));
+        panel.setBorder(BorderFactory.createTitledBorder(PROPERTY_MASKING_SECTION_LABEL));
         panel.add(maskExpressionPanel);
         panel.add(secondRowPanel);
 
@@ -749,12 +766,15 @@ class ReprojectionForm extends JTabbedPane {
         private static final String NO_DATA_VALUE = "noDataValue";
         private static final String RESAMPLING_NAME = "resamplingName";
 
-        private boolean preserveResolution = true;
-        private boolean includeTiePointGrids = true;
-        private boolean addDeltaBands = false;
-        private double noDataValue = Double.NaN;
-        private String resamplingName = RESAMPLING_IDENTIFIER[0];
+        Preferences preferences = SnapApp.getDefault().getPreferences();
+
+        private boolean preserveResolution = preferences.getBoolean(PROPERTY_PRESERVE_RESOLUTION_KEY, PROPERTY_PRESERVE_RESOLUTION_DEFAULT);
+        private boolean includeTiePointGrids = preferences.getBoolean(PROPERTY_INCLUDE_TIE_POINT_GRIDS_KEY, PROPERTY_INCLUDE_TIE_POINT_GRIDS_DEFAULT);
+        private boolean addDeltaBands = preferences.getBoolean(PROPERTY_ADD_DELTA_BANDS_KEY, PROPERTY_ADD_DELTA_BANDS_DEFAULT);
+        private double noDataValue = preferences.getDouble(PROPERTY_NO_DATA_VALUE_KEY, PROPERTY_NO_DATA_VALUE_DEFAULT);
+        private String resamplingName = preferences.get(PROPERTY_RESAMPLING_METHOD_KEY, PROPERTY_RESAMPLING_METHOD_DEFAULT);;
     }
+
 
     private static class OrthorectifyProductFilter implements ProductFilter {
 
@@ -773,7 +793,7 @@ class ReprojectionForm extends JTabbedPane {
         }
     }
 
-    private class EditExpressionActionListener implements ActionListener {
+    public class EditExpressionActionListener implements ActionListener {
 
         private final Window parentWindow;
 
