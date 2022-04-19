@@ -73,8 +73,8 @@ public class ReprojectionUI extends BaseOperatorUI {
     // Components of Masking
     private boolean applyValidPixelExpression = PROPERTY_APPLY_VALID_PIXEL_EXPRESSION_DEFAULT;
     private JCheckBox applyValidPixelExpressionCheckBox;
-    private boolean transferValidPixelExpression;
-    private JCheckBox transferValidPixelExpressionCheckBox;
+    private boolean retainValidPixelExpression;
+    private JCheckBox retainValidPixelExpressionCheckBox;
     private JButton editExpressionButton;
     private JTextArea expressionArea;
 
@@ -167,8 +167,8 @@ public class ReprojectionUI extends BaseOperatorUI {
         applyValidPixelExpression = applyValidPixelExpressionCheckBox.isSelected();
         paramMap.put("applyValidPixelExpression", applyValidPixelExpression);
 
-        transferValidPixelExpression = transferValidPixelExpressionCheckBox.isSelected();
-        paramMap.put("transferValidPixelExpression", transferValidPixelExpression);
+        retainValidPixelExpression = retainValidPixelExpressionCheckBox.isSelected();
+        paramMap.put("retainValidPixelExpression", retainValidPixelExpression);
 
         if (expressionArea.getText() != null) {
             paramMap.put("maskExpression", expressionArea.getText());
@@ -466,11 +466,11 @@ public class ReprojectionUI extends BaseOperatorUI {
 
 
         //Retain valid pixel expression
-        transferValidPixelExpressionCheckBox = new JCheckBox(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_LABEL);
+        retainValidPixelExpressionCheckBox = new JCheckBox(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_LABEL);
         boolean retainValidPixelExpressionPreference = preferences.getBoolean(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_KEY, PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_DEFAULT);
-        transferValidPixelExpressionCheckBox.setSelected(retainValidPixelExpressionPreference);
-        transferValidPixelExpressionCheckBox.setToolTipText(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP);
-        outputSettingsPanel.add(transferValidPixelExpressionCheckBox);
+        retainValidPixelExpressionCheckBox.setSelected(retainValidPixelExpressionPreference);
+        retainValidPixelExpressionCheckBox.setToolTipText(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP);
+        outputSettingsPanel.add(retainValidPixelExpressionCheckBox);
 
 
         return outputSettingsPanel;

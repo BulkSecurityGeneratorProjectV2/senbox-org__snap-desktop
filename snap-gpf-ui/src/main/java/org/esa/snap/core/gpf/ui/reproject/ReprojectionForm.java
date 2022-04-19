@@ -98,8 +98,7 @@ class ReprojectionForm extends JTabbedPane {
 
     private boolean applyValidPixelExpression;
     private JCheckBox applyValidPixelExpressionCheckBox;
-    private boolean transferValidPixelExpression;
-    private JCheckBox transferValidPixelExpressionCheckBox;
+
 
 
     private JPanel maskExpressionPanel;
@@ -133,6 +132,7 @@ class ReprojectionForm extends JTabbedPane {
         parameterMap.put("includeTiePointGrids", reprojectionModel.includeTiePointGrids);
         parameterMap.put("addDeltaBands", reprojectionModel.addDeltaBands);
         parameterMap.put("noDataValue", reprojectionModel.noDataValue);
+        parameterMap.put("retainValidPixelExpression", reprojectionModel.retainValidPixelExpression);
         if (!collocationCrsUI.getRadioButton().isSelected()) {
             CoordinateReferenceSystem selectedCrs = getSelectedCrs();
             if (selectedCrs != null) {
@@ -169,8 +169,6 @@ class ReprojectionForm extends JTabbedPane {
         applyValidPixelExpression = applyValidPixelExpressionCheckBox.isSelected();
         parameterMap.put("applyValidPixelExpression", applyValidPixelExpression);
 
-        transferValidPixelExpression = transferValidPixelExpressionCheckBox.isSelected();
-        parameterMap.put("transferValidPixelExpression", transferValidPixelExpression);
 
         if (expressionArea.getText() != null) {
             parameterMap.put("maskExpression", expressionArea.getText());
@@ -486,22 +484,27 @@ class ReprojectionForm extends JTabbedPane {
         Preferences preferences = SnapApp.getDefault().getPreferences();
 
 
-        final TableLayout tableLayout = new TableLayout(3);
+        final TableLayout tableLayout = new TableLayout(2);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
         tableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        tableLayout.setColumnFill(0, TableLayout.Fill.NONE);
         tableLayout.setTablePadding(4, 4);
-        tableLayout.setColumnPadding(0, new Insets(4, 4, 4, 20));
-        tableLayout.setColumnWeightX(0, 0.0);
-        tableLayout.setColumnWeightX(1, 0.0);
-        tableLayout.setColumnWeightX(2, 1.0);
-        tableLayout.setCellColspan(0, 1, 2);
-        tableLayout.setCellPadding(1, 0, new Insets(4, 24, 4, 20));
+
 
         final JPanel outputSettingsPanel = new JPanel(tableLayout);
         outputSettingsPanel.setBorder(BorderFactory.createTitledBorder(PROPERTY_OUTPUT_SETTINGS_SECTION_LABEL));
 
         final BindingContext context = new BindingContext(reprojectionContainer);
+
+
+
+        final TableLayout resolutionTableLayout = new TableLayout(2);
+        resolutionTableLayout.setTableAnchor(TableLayout.Anchor.WEST);
+        resolutionTableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        resolutionTableLayout.setColumnFill(0, TableLayout.Fill.NONE);
+        resolutionTableLayout.setTablePadding(4, 4);
+
+        final JPanel resolutionPanel = new JPanel(resolutionTableLayout);
+        resolutionPanel.setBorder(BorderFactory.createTitledBorder("Resolution"));
 
         final JCheckBox preserveResolutionCheckBox = new JCheckBox(PROPERTY_PRESERVE_RESOLUTION_LABEL);
         preserveResolutionCheckBox.setToolTipText(PROPERTY_PRESERVE_RESOLUTION_TOOLTIP);
@@ -512,12 +515,7 @@ class ReprojectionForm extends JTabbedPane {
                     collocate || reprojectionModel.preserveResolution);
             preserveResolutionCheckBox.setEnabled(!collocate);
         });
-        outputSettingsPanel.add(preserveResolutionCheckBox);
-
-        JCheckBox includeTPcheck = new JCheckBox(PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL);
-        includeTPcheck.setToolTipText(PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP);
-        context.bind(Model.REPROJ_TIEPOINTS, includeTPcheck);
-        outputSettingsPanel.add(includeTPcheck);
+        resolutionPanel.add(preserveResolutionCheckBox);
 
         preserveResolutionCheckBox.addActionListener(e -> {
             if (preserveResolutionCheckBox.isSelected()) {
@@ -531,24 +529,20 @@ class ReprojectionForm extends JTabbedPane {
         outputParamButton = new JButton(PROPERTY_RESOLUTION_PARAMETERS_BUTTON_NAME);
         outputParamButton.setEnabled(!reprojectionModel.preserveResolution);
         outputParamButton.addActionListener(new OutputParamActionListener());
-        outputSettingsPanel.add(outputParamButton);
+        resolutionPanel.add(outputParamButton);
 
-        outputSettingsPanel.add(new JLabel(PROPERTY_NO_DATA_VALUE_LABEL));
 
-        final JTextField noDataField = new JTextField();
-        noDataField.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
-
-        outputSettingsPanel.add(noDataField);
-        context.bind(Model.NO_DATA_VALUE, noDataField);
-
-        // Add Delta Bands Component
-        JCheckBox addDeltaBandsChecker = new JCheckBox(PROPERTY_ADD_DELTA_BANDS_LABEL);
-        addDeltaBandsChecker.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
-        outputSettingsPanel.add(addDeltaBandsChecker);
-        context.bind(Model.ADD_DELTA_BANDS, addDeltaBandsChecker);
+        outputSettingsPanel.add(resolutionPanel);
 
 
         // Resampling Method Component
+        final TableLayout resamplingTableLayout = new TableLayout(2);
+        resamplingTableLayout.setTableAnchor(TableLayout.Anchor.WEST);
+        resamplingTableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        resamplingTableLayout.setColumnFill(0, TableLayout.Fill.NONE);
+        resamplingTableLayout.setTablePadding(4, 4);
+        final JPanel resamplingPanel = new JPanel(resamplingTableLayout);
+
         JLabel resamplingMethodLabel = new JLabel(PROPERTY_RESAMPLING_METHOD_LABEL);
         String resamplingMethodPreference = preferences.get(PROPERTY_RESAMPLING_METHOD_KEY, PROPERTY_RESAMPLING_METHOD_DEFAULT);
         JComboBox<String> resampleComboBox = new JComboBox<>(PROPERTY_RESAMPLING_METHOD_OPTIONS);
@@ -557,18 +551,60 @@ class ReprojectionForm extends JTabbedPane {
         resamplingMethodLabel.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
         resampleComboBox.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
         context.bind(Model.RESAMPLING_NAME, resampleComboBox);
-        outputSettingsPanel.add(resamplingMethodLabel);
-        outputSettingsPanel.add(resampleComboBox);
+        resamplingPanel.add(resamplingMethodLabel);
+        resamplingPanel.add(resampleComboBox);
 
-
-        boolean retainValidPixelExpressionPreference = preferences.getBoolean(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_KEY, PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_DEFAULT);
-        transferValidPixelExpressionCheckBox = new JCheckBox(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_LABEL);
-        transferValidPixelExpressionCheckBox.setSelected(retainValidPixelExpressionPreference);
-        transferValidPixelExpressionCheckBox.setToolTipText(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP);
-        outputSettingsPanel.add(transferValidPixelExpressionCheckBox);
+        outputSettingsPanel.add(resamplingPanel);
 
 
 
+        // Tie-Point Grids
+        JCheckBox includeTPcheck = new JCheckBox(PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL);
+        includeTPcheck.setToolTipText(PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP);
+        context.bind(Model.REPROJ_TIEPOINTS, includeTPcheck);
+        outputSettingsPanel.add(includeTPcheck);
+
+
+        // Add Delta Bands Component
+        JCheckBox addDeltaBandsChecker = new JCheckBox(PROPERTY_ADD_DELTA_BANDS_LABEL);
+        addDeltaBandsChecker.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
+        outputSettingsPanel.add(addDeltaBandsChecker);
+        context.bind(Model.ADD_DELTA_BANDS, addDeltaBandsChecker);
+
+
+
+
+        // No-Data Component
+        final TableLayout noDataTableLayout = new TableLayout(2);
+        noDataTableLayout.setTableAnchor(TableLayout.Anchor.WEST);
+        noDataTableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        noDataTableLayout.setColumnFill(0, TableLayout.Fill.NONE);
+        noDataTableLayout.setColumnFill(1, TableLayout.Fill.NONE);
+        noDataTableLayout.setColumnAnchor(0, TableLayout.Anchor.EAST);
+        noDataTableLayout.setColumnAnchor(1, TableLayout.Anchor.WEST);
+        noDataTableLayout.setCellWeightX(0,0,0.0);
+        noDataTableLayout.setCellWeightX(0,1,1.0);
+
+        noDataTableLayout.setTablePadding(4, 4);
+        final JPanel noDataPanel = new JPanel(noDataTableLayout);
+
+
+        final JTextField noDataField = new JTextField("12345678");
+        noDataField.setMinimumSize(noDataField.getPreferredSize());
+        noDataField.setPreferredSize(noDataField.getPreferredSize());
+        noDataField.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
+        context.bind(Model.NO_DATA_VALUE, noDataField);
+        noDataPanel.add(new JLabel(PROPERTY_NO_DATA_VALUE_LABEL));
+        noDataPanel.add(noDataField);
+
+        outputSettingsPanel.add(noDataPanel);
+
+
+
+        JCheckBox retainValidPixelExpressionCheckBox = new JCheckBox(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_LABEL);
+        retainValidPixelExpressionCheckBox.setToolTipText(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP);
+        outputSettingsPanel.add(retainValidPixelExpressionCheckBox);
+        context.bind(Model.RETAIN_VALID_PIXEL_EXPRESSION, retainValidPixelExpressionCheckBox);
 
 
 
@@ -765,10 +801,13 @@ class ReprojectionForm extends JTabbedPane {
         private static final String ADD_DELTA_BANDS = "addDeltaBands";
         private static final String NO_DATA_VALUE = "noDataValue";
         private static final String RESAMPLING_NAME = "resamplingName";
+        private static final String RETAIN_VALID_PIXEL_EXPRESSION = "retainValidPixelExpression";
+
 
         Preferences preferences = SnapApp.getDefault().getPreferences();
 
         private boolean preserveResolution = preferences.getBoolean(PROPERTY_PRESERVE_RESOLUTION_KEY, PROPERTY_PRESERVE_RESOLUTION_DEFAULT);
+        private boolean retainValidPixelExpression = preferences.getBoolean(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_KEY, PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_DEFAULT);
         private boolean includeTiePointGrids = preferences.getBoolean(PROPERTY_INCLUDE_TIE_POINT_GRIDS_KEY, PROPERTY_INCLUDE_TIE_POINT_GRIDS_DEFAULT);
         private boolean addDeltaBands = preferences.getBoolean(PROPERTY_ADD_DELTA_BANDS_KEY, PROPERTY_ADD_DELTA_BANDS_DEFAULT);
         private double noDataValue = preferences.getDouble(PROPERTY_NO_DATA_VALUE_KEY, PROPERTY_NO_DATA_VALUE_DEFAULT);
