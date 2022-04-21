@@ -588,13 +588,14 @@ class ReprojectionForm extends JTabbedPane {
         noDataTableLayout.setTablePadding(4, 4);
         final JPanel noDataPanel = new JPanel(noDataTableLayout);
 
-
+        JLabel noDataLabel = new JLabel(PROPERTY_NO_DATA_VALUE_LABEL);
+        noDataLabel.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
         final JTextField noDataField = new JTextField("12345678");
         noDataField.setMinimumSize(noDataField.getPreferredSize());
         noDataField.setPreferredSize(noDataField.getPreferredSize());
         noDataField.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
         context.bind(Model.NO_DATA_VALUE, noDataField);
-        noDataPanel.add(new JLabel(PROPERTY_NO_DATA_VALUE_LABEL));
+        noDataPanel.add(noDataLabel);
         noDataPanel.add(noDataField);
 
         outputSettingsPanel.add(noDataPanel);

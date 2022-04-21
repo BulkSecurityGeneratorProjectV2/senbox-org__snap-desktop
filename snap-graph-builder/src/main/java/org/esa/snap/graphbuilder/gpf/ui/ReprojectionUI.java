@@ -390,23 +390,30 @@ public class ReprojectionUI extends BaseOperatorUI {
     }
 
     private JPanel createOuputSettingsPanel() {
-        final TableLayout tableLayout = new TableLayout(3);
+
+        Preferences preferences = SnapApp.getDefault().getPreferences();
+
+
+        final TableLayout tableLayout = new TableLayout(2);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
         tableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        tableLayout.setColumnFill(0, TableLayout.Fill.NONE);
         tableLayout.setTablePadding(4, 4);
-        tableLayout.setColumnPadding(0, new Insets(4, 4, 4, 20));
-        tableLayout.setColumnWeightX(0, 0.0);
-        tableLayout.setColumnWeightX(1, 0.0);
-        tableLayout.setColumnWeightX(2, 1.0);
-        tableLayout.setCellColspan(0, 1, 2);
-        tableLayout.setCellPadding(1, 0, new Insets(4, 24, 4, 20));
+
 
         final JPanel outputSettingsPanel = new JPanel(tableLayout);
         outputSettingsPanel.setBorder(BorderFactory.createTitledBorder(PROPERTY_OUTPUT_SETTINGS_SECTION_LABEL));
 
 
-        Preferences preferences = SnapApp.getDefault().getPreferences();
+
+
+        final TableLayout resolutionTableLayout = new TableLayout(2);
+        resolutionTableLayout.setTableAnchor(TableLayout.Anchor.WEST);
+        resolutionTableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        resolutionTableLayout.setColumnFill(0, TableLayout.Fill.NONE);
+        resolutionTableLayout.setTablePadding(4, 4);
+
+        final JPanel resolutionPanel = new JPanel(resolutionTableLayout);
+        resolutionPanel.setBorder(BorderFactory.createTitledBorder("Resolution"));
 
 
         // Preserve resolution
@@ -421,7 +428,38 @@ public class ReprojectionUI extends BaseOperatorUI {
             }
 
         });
-        outputSettingsPanel.add(preserveResolutionCheckBox);
+        resolutionPanel.add(preserveResolutionCheckBox);
+
+
+        outputParamButton = new JButton(PROPERTY_RESOLUTION_PARAMETERS_BUTTON_NAME);
+        outputParamButton.setEnabled(!preserveResolutionCheckBox.isSelected());
+        outputParamButton.addActionListener(new OutputParamActionListener());
+        resolutionPanel.add(outputParamButton);
+
+
+        outputSettingsPanel.add(resolutionPanel);
+
+
+        // Resampling method
+        final TableLayout resamplingTableLayout = new TableLayout(2);
+        resamplingTableLayout.setTableAnchor(TableLayout.Anchor.WEST);
+        resamplingTableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        resamplingTableLayout.setColumnFill(0, TableLayout.Fill.NONE);
+        resamplingTableLayout.setTablePadding(4, 4);
+        final JPanel resamplingPanel = new JPanel(resamplingTableLayout);
+
+        JLabel resamplingMethodLabel = new JLabel(PROPERTY_RESAMPLING_METHOD_LABEL);
+        resamplingMethodLabel.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
+        resampleComboBox = new JComboBox<>(PROPERTY_RESAMPLING_METHOD_OPTIONS);
+        String resamplingMethodPreference = preferences.get(PROPERTY_RESAMPLING_METHOD_KEY, PROPERTY_RESAMPLING_METHOD_DEFAULT);
+        resampleComboBox.setPrototypeDisplayValue(resamplingMethodPreference);
+        resampleComboBox.setSelectedItem(resamplingMethodPreference);
+        resampleComboBox.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
+        resamplingPanel.add(resamplingMethodLabel);
+        resamplingPanel.add(resampleComboBox);
+
+        outputSettingsPanel.add(resamplingPanel);
+
 
 
         // Tie-point grids
@@ -431,19 +469,7 @@ public class ReprojectionUI extends BaseOperatorUI {
         outputSettingsPanel.add(includeTPcheck);
 
 
-        outputParamButton = new JButton(PROPERTY_RESOLUTION_PARAMETERS_BUTTON_NAME);
-        outputParamButton.setEnabled(!preserveResolutionCheckBox.isSelected());
-        outputParamButton.addActionListener(new OutputParamActionListener());
-        outputSettingsPanel.add(outputParamButton);
 
-        // No-data Value Components
-        JLabel noDataLabel = new JLabel(PROPERTY_NO_DATA_VALUE_LABEL);
-        noDataLabel.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
-        Double noDataPreference = preferences.getDouble(PROPERTY_NO_DATA_VALUE_KEY, PROPERTY_NO_DATA_VALUE_DEFAULT);
-        noDataField = new JTextField(Double.toString(noDataPreference));
-        noDataField.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
-        outputSettingsPanel.add(noDataLabel);
-        outputSettingsPanel.add(noDataField);
 
 
         // Add delta bands component
@@ -453,16 +479,33 @@ public class ReprojectionUI extends BaseOperatorUI {
         addDeltaBandsCheckBox.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
         outputSettingsPanel.add(addDeltaBandsCheckBox);
 
-        // Resampling method
-        JLabel resamplingMethodLabel = new JLabel(PROPERTY_RESAMPLING_METHOD_LABEL);
-        resamplingMethodLabel.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
-        resampleComboBox = new JComboBox<>(PROPERTY_RESAMPLING_METHOD_OPTIONS);
-        String resamplingMethodPreference = preferences.get(PROPERTY_RESAMPLING_METHOD_KEY, PROPERTY_RESAMPLING_METHOD_DEFAULT);
-        resampleComboBox.setPrototypeDisplayValue(resamplingMethodPreference);
-        resampleComboBox.setSelectedItem(resamplingMethodPreference);
-        resampleComboBox.setToolTipText(PROPERTY_RESAMPLING_METHOD_TOOLTIP);
-        outputSettingsPanel.add(resamplingMethodLabel);
-        outputSettingsPanel.add(resampleComboBox);
+
+
+
+        // No-data Value Components
+        final TableLayout noDataTableLayout = new TableLayout(2);
+        noDataTableLayout.setTableAnchor(TableLayout.Anchor.WEST);
+        noDataTableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
+        noDataTableLayout.setColumnFill(0, TableLayout.Fill.NONE);
+        noDataTableLayout.setColumnFill(1, TableLayout.Fill.NONE);
+        noDataTableLayout.setColumnAnchor(0, TableLayout.Anchor.EAST);
+        noDataTableLayout.setColumnAnchor(1, TableLayout.Anchor.WEST);
+        noDataTableLayout.setCellWeightX(0,0,0.0);
+        noDataTableLayout.setCellWeightX(0,1,1.0);
+
+        noDataTableLayout.setTablePadding(4, 4);
+        final JPanel noDataPanel = new JPanel(noDataTableLayout);
+
+        JLabel noDataLabel = new JLabel(PROPERTY_NO_DATA_VALUE_LABEL);
+        noDataLabel.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
+        Double noDataPreference = preferences.getDouble(PROPERTY_NO_DATA_VALUE_KEY, PROPERTY_NO_DATA_VALUE_DEFAULT);
+        noDataField = new JTextField(Double.toString(noDataPreference), 8);
+        noDataField.setToolTipText(PROPERTY_NO_DATA_VALUE_TOOLTIP);
+        noDataPanel.add(noDataLabel);
+        noDataPanel.add(noDataField);
+
+        outputSettingsPanel.add(noDataPanel);
+
 
 
         //Retain valid pixel expression

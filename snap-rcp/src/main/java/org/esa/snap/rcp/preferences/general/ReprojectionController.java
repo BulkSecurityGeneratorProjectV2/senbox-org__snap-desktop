@@ -83,7 +83,7 @@ public final class ReprojectionController extends DefaultConfigController {
 
     public static final String PROPERTY_NO_DATA_VALUE_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".no.data.value";
     public static final String PROPERTY_NO_DATA_VALUE_LABEL = "No-data value";
-    public static final String PROPERTY_NO_DATA_VALUE_TOOLTIP = "No-data value";
+    public static final String PROPERTY_NO_DATA_VALUE_TOOLTIP = "No-data value to set in target file";
     public static double PROPERTY_NO_DATA_VALUE_DEFAULT = Double.NaN;
 
     public static final String PROPERTY_RESAMPLING_METHOD_KEY = PROPERTY_OUTPUT_SETTINGS_KEY_SUFFIX + ".resampling.method";
