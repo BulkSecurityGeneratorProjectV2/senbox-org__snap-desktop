@@ -209,7 +209,7 @@ public class ReprojectionUI extends BaseOperatorUI {
 
 
         //create and add the output setting panel
-        parameterPanel.add(createOuputSettingsPanel());
+        parameterPanel.add(createOutputSettingsPanel());
 
 
         //create and add the info panel
@@ -389,7 +389,7 @@ public class ReprojectionUI extends BaseOperatorUI {
         }
     }
 
-    private JPanel createOuputSettingsPanel() {
+    private JPanel createOutputSettingsPanel() {
 
         Preferences preferences = SnapApp.getDefault().getPreferences();
 
@@ -462,24 +462,6 @@ public class ReprojectionUI extends BaseOperatorUI {
 
 
 
-        // Tie-point grids
-        includeTPcheck = new JCheckBox(PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL);
-        includeTPcheck.setSelected(preferences.getBoolean(PROPERTY_INCLUDE_TIE_POINT_GRIDS_KEY, PROPERTY_INCLUDE_TIE_POINT_GRIDS_DEFAULT));
-        includeTPcheck.setToolTipText(PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP);
-        outputSettingsPanel.add(includeTPcheck);
-
-
-
-
-
-        // Add delta bands component
-        addDeltaBandsCheckBox = new JCheckBox(PROPERTY_ADD_DELTA_BANDS_LABEL);
-        boolean addDeltaBandsPreference = preferences.getBoolean(PROPERTY_ADD_DELTA_BANDS_KEY, PROPERTY_ADD_DELTA_BANDS_DEFAULT);
-        addDeltaBandsCheckBox.setSelected(addDeltaBandsPreference);
-        addDeltaBandsCheckBox.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
-        outputSettingsPanel.add(addDeltaBandsCheckBox);
-
-
 
 
         // No-data Value Components
@@ -514,6 +496,25 @@ public class ReprojectionUI extends BaseOperatorUI {
         retainValidPixelExpressionCheckBox.setSelected(retainValidPixelExpressionPreference);
         retainValidPixelExpressionCheckBox.setToolTipText(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP);
         outputSettingsPanel.add(retainValidPixelExpressionCheckBox);
+
+        // Tie-point grids
+        includeTPcheck = new JCheckBox(PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL);
+        includeTPcheck.setSelected(preferences.getBoolean(PROPERTY_INCLUDE_TIE_POINT_GRIDS_KEY, PROPERTY_INCLUDE_TIE_POINT_GRIDS_DEFAULT));
+        includeTPcheck.setToolTipText(PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP);
+        outputSettingsPanel.add(includeTPcheck);
+
+
+
+
+
+        // Add delta bands component
+        addDeltaBandsCheckBox = new JCheckBox(PROPERTY_ADD_DELTA_BANDS_LABEL);
+        boolean addDeltaBandsPreference = preferences.getBoolean(PROPERTY_ADD_DELTA_BANDS_KEY, PROPERTY_ADD_DELTA_BANDS_DEFAULT);
+        addDeltaBandsCheckBox.setSelected(addDeltaBandsPreference);
+        addDeltaBandsCheckBox.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
+        outputSettingsPanel.add(addDeltaBandsCheckBox);
+
+
 
 
         return outputSettingsPanel;

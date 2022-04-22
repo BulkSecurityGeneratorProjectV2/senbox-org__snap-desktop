@@ -40,9 +40,6 @@ public class ReprojectionAction extends AbstractSnapAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (dialog != null) {
-            dialog = null;
-        }
         if (dialog == null) {
             dialog = new ReprojectionDialog(false, Bundle.CTL_ReprojectionAction_Name(),
                                             "reprojectionAction", getAppContext());

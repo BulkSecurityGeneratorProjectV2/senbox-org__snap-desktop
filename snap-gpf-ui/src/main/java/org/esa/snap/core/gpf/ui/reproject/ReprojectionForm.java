@@ -315,7 +315,7 @@ class ReprojectionForm extends JTabbedPane {
         parameterPanel.add(createMaskSettingsPanel());
 
 
-        parameterPanel.add(createOuputSettingsPanel());
+        parameterPanel.add(createOutputSettingsPanel());
 
 
         infoForm = new InfoForm();
@@ -479,7 +479,7 @@ class ReprojectionForm extends JTabbedPane {
         }
     }
 
-    private JPanel createOuputSettingsPanel() {
+    private JPanel createOutputSettingsPanel() {
 
         Preferences preferences = SnapApp.getDefault().getPreferences();
 
@@ -558,20 +558,6 @@ class ReprojectionForm extends JTabbedPane {
 
 
 
-        // Tie-Point Grids
-        JCheckBox includeTPcheck = new JCheckBox(PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL);
-        includeTPcheck.setToolTipText(PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP);
-        context.bind(Model.REPROJ_TIEPOINTS, includeTPcheck);
-        outputSettingsPanel.add(includeTPcheck);
-
-
-        // Add Delta Bands Component
-        JCheckBox addDeltaBandsChecker = new JCheckBox(PROPERTY_ADD_DELTA_BANDS_LABEL);
-        addDeltaBandsChecker.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
-        outputSettingsPanel.add(addDeltaBandsChecker);
-        context.bind(Model.ADD_DELTA_BANDS, addDeltaBandsChecker);
-
-
 
 
         // No-Data Component
@@ -606,6 +592,22 @@ class ReprojectionForm extends JTabbedPane {
         retainValidPixelExpressionCheckBox.setToolTipText(PROPERTY_RETAIN_VALID_PIXEL_EXPRESSION_TOOLTIP);
         outputSettingsPanel.add(retainValidPixelExpressionCheckBox);
         context.bind(Model.RETAIN_VALID_PIXEL_EXPRESSION, retainValidPixelExpressionCheckBox);
+
+
+
+        // Tie-Point Grids
+        JCheckBox includeTPcheck = new JCheckBox(PROPERTY_INCLUDE_TIE_POINT_GRIDS_LABEL);
+        includeTPcheck.setToolTipText(PROPERTY_INCLUDE_TIE_POINT_GRIDS_TOOLTIP);
+        context.bind(Model.REPROJ_TIEPOINTS, includeTPcheck);
+        outputSettingsPanel.add(includeTPcheck);
+
+
+        // Add Delta Bands Component
+        JCheckBox addDeltaBandsChecker = new JCheckBox(PROPERTY_ADD_DELTA_BANDS_LABEL);
+        addDeltaBandsChecker.setToolTipText(PROPERTY_ADD_DELTA_BANDS_TOOLTIP);
+        outputSettingsPanel.add(addDeltaBandsChecker);
+        context.bind(Model.ADD_DELTA_BANDS, addDeltaBandsChecker);
+
 
 
 
