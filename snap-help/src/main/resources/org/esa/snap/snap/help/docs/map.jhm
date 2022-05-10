@@ -17,6 +17,7 @@
     <mapID target="beamDimapFormat" url="general/overview/BeamDimapFormat.html"/>
     <mapID target="pconvertTool" url="general/overview/PConvertUsage.html"/>
     <mapID target="resamplingMethods" url="general/overview/ResamplingMethods.html"/>
+    <mapID target="reprojectionConcepts" url="general/overview/ResamplingConcepts.html"/>
     <mapID target="envisatProducts" url="general/envisat-products/index.html"/>
 
     <!-- Target IDs can be found when putting a breakpoint at L506 in class org.netbeans.modules.autoupdate.ui.PluginManagerUI -->

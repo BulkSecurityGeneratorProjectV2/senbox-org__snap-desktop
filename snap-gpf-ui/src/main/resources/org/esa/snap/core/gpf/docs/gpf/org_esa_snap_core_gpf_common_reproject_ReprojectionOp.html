@@ -72,9 +72,13 @@
             &lt;noDataValue&gt;NaN&lt;/noDataValue&gt;
             &lt;includeTiePointGrids&gt;true&lt;/includeTiePointGrids&gt;
             &lt;addDeltaBands&gt;false&lt;/addDeltaBands&gt;
+            &lt;applyValidPixelExpression&gt;false&lt;/applyValidPixelExpression&gt;
+            &lt;retainValidPixelExpression&gt;false&lt;/retainValidPixelExpression&gt;
+            &lt;maskExpression&gt;false&lt;/maskExpression&gt;
         &lt;/parameters&gt;
     &lt;/node&gt;
  </pre>
+
 <h2>Sources</h2>
 <table>
 <tr>
@@ -232,6 +236,32 @@
   <td>Whether to add delta longitude and latitude bands.</td>
   <td></td>
 </tr>
+
+
+    <tr>
+        <td><code>applyValidPixelExpression</code></td>
+        <td><code>boolean</code></td>
+        <td><code>true</code></td>
+        <td>Constrain which pixels get used based on the valid expression of the source file bands.</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><code>retainValidPixelExpression</code></td>
+        <td><code>boolean</code></td>
+        <td><code>true</code></td>
+        <td>The valid pixel expression of each of the source file bands will be retained and stored in the corresponding
+            bands of the reprojected file.</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><code>maskExpression</code></td>
+        <td><code>boolean</code></td>
+        <td><code>false</code></td>
+        <td>Custom logical expression to constrain which pixels of the source band get used.</td>
+        <td></td>
+    </tr>
+
+
 </table>
 <hr/>
 </body>

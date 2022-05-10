@@ -134,6 +134,7 @@
                 <tocitem text="Reprojection" target="reprojectionAction">
                     <tocitem text="Reprojection Dialog" target="reprojectionAction"/>
                     <tocitem text="Resampling Methods" target="resamplingMethods"/>
+                    <tocitem text="Reprojection Concepts" target="reprojectionConcepts"/>
                 </tocitem>
                 <tocitem text="Resample" target="resampleAction"/>
             </tocitem>
