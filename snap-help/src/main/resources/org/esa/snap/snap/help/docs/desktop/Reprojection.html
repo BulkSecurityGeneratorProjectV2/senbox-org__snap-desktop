@@ -516,38 +516,6 @@
 </p>
 
 
-<a name="eastingNorthing"></a>
-<p class="i1">
-    <i><b>A bit more about the Easting and Northing fields and the Reset button</b></i><br>
-
-    The Easting and Northing fields can be a bit intimidating and not so intuitive, however basically you need to ask
-    yourself whether
-    you want the geographic boundaries of your output file to be adapted to "best-fit" and include all the data from the
-    input scene, or
-    whether you have a specific and exact geographic boundary for your output file in mind.
-</p>
-
-<p class="i1">
-    For the former "best fit" case, SeaDAS can calculate default Easting and Northing values based on your scene
-    boundaries and
-    CRS criteria. To do this, click the "Reset" button at the bottom of this GUI window. Of note is that the very
-    first time you open this sub window during a SeaDAS session, the default will be calculated and applied,
-    but from that point onward the assumption is that the value in the textfield is the value which you want to use
-    If you make further changes to the CRS criteria or change to a different file, then you will again need to click
-    "Reset".
-</p>
-<p class="i1">
-
-    For the latter case, since the false easting and false northing fields also appear with the CRS definition it may be
-    better
-    or perhaps more clear to set them there and then set the values here to 0.0 for each. Either way, keep in mind that
-    the actual
-    false easting and false northing is the sum of the corresponding values in the CRS parameters and Output Parameters.
-
-</p>
-<p class="i1"><i>Note: Easting, northing and the pixel size are given in the units of the underlying map
-    (e.g. dec. degree for geographic and meter for the UTM projection).</i>
-</p>
 
 
 <br><br>
@@ -558,10 +526,9 @@
 
 
 <a name="Metadata"></a>
+<h4>Metadata</h4>
 
-<p class="subSectionTitle">Metadata</p>
-
-<p>The following meta data is added to the output file by this tool. All the rest of the original meta data from the
+<p>The following meta data is added to the output file by the Reproject tool. All the rest of the original meta data from the
     input file is retained and included in the output file<br>
 
 <table>
@@ -604,35 +571,6 @@
 
 </table>
 
-
-<br>
-<br>
-
-<!--<a name="GPT"></a>-->
-
-<!--<p class="subSectionTitle">Command Line Tool (GPT)</p>-->
-
-<!--<p>-->
-<!--    The Reproject tool can also be run from the command line using SeaDAS GPT (graph processing tool). All parameter-->
-<!--    options within the GUI are also supported for the command line version with a few minor parameter name differences-->
-<!--    which-->
-<!--    will be noted below.-->
-<!--</p>-->
-<!--<p>-->
-<!--    GPT "collocatedWith" = GUI "use CRS of file" <br>-->
-<!--    GPT "crs" can be either XML or the EPSG Authority (for example EPSG:4326, AUTO:42001, etc.) <br>-->
-<!--    GPT "wktFile" as an input is not available in the GUI, but the GUI can create and display the CRS WKT of the-->
-<!--    specified CRS-->
-<!--    parameters-->
-<!--    which could subsequently be used on the command line. <br>-->
-<!--</p>-->
-
-<!--<p><i>Note: The GPT Reproject tool also includes the Orthorectification.</i> </p>-->
-<!--<p>-->
-<!--    <a href="../beam-gpf/org_esa_beam_gpf_operators_standard_reproject_ReprojectionOp.html">see more on Reproject-GPT</a>-->
-<!--</p>-->
-<!--<br>-->
-<!--<br>-->
 
 
 </body>
