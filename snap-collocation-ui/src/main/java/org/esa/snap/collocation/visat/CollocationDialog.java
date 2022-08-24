@@ -25,7 +25,6 @@ import org.esa.snap.core.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.core.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.ui.AppContext;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -45,10 +44,10 @@ class CollocationDialog extends SingleTargetProductDialog {
 
         parameterSupport = new OperatorParameterSupport(operatorSpi.getOperatorDescriptor());
         OperatorMenu operatorMenu = new OperatorMenu(this.getJDialog(),
-                                                     operatorSpi.getOperatorDescriptor(),
-                                                     parameterSupport,
-                                                     appContext,
-                                                     HELP_ID);
+                operatorSpi.getOperatorDescriptor(),
+                parameterSupport,
+                appContext,
+                HELP_ID);
 
         getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
 
@@ -60,15 +59,15 @@ class CollocationDialog extends SingleTargetProductDialog {
     protected Product createTargetProduct() throws Exception {
         final Map<String, Product> productMap = new LinkedHashMap<String, Product>(5);
         productMap.put("master", form.getMasterProduct());
-        for (int i = 0 ; i < form.getSlaveProducts().length ; i++) {
-            productMap.put(String.format("slave%d",i), form.getSlaveProducts()[i]);
+        for (int i = 0; i < form.getDependentProducts().length ; i++) {
+            productMap.put(String.format("dependent%d",i), form.getDependentProducts()[i]);
         }
 
         parameterSupport.getParameterMap().put("masterProductName",form.getMasterProduct().getName());
         parameterSupport.getParameterMap().put("sourceProductPaths",form.getSourceProductPaths());
 
         return GPF.createProduct(OperatorSpi.getOperatorAlias(CollocateOp.class), parameterSupport.getParameterMap(),
-                                 productMap);
+                productMap);
     }
 
     @Override
